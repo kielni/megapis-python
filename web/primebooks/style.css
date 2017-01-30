@@ -1,0 +1,23 @@
+h3 {
+    margin-top: 5px;
+}
+
+.buttons {
+    margin-top: 10px;
+}
+
+.buttons button {
+    margin-right: 10px;
+}
+
+.starred {
+    background-color: #ffffcc;
+}
+
+ul {
+    margin-top: 10px;
+}
+
+li {
+    list-style-type: none;
+}
