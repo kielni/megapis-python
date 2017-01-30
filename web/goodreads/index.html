@@ -80,6 +80,7 @@
             exclude: function(id) {
                 console.log('root exclude '+id);
                 /*
+                this is too slow
                 var idx = this.books.findIndex(function(book) {
                     return book.id === id;
                 });
