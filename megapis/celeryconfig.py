@@ -1,16 +1,16 @@
 from copy import copy
 
-oimport config
+from .config import config
 
 broker_url = 'redis://'
 
 task_serializer = 'json'
 accept_content = ['json']
-timezone = config.MEGAPIS.get('timezone', 'America/Los_Angeles')
+timezone = config.get('timezone', 'America/Los_Angeles')
 enable_utc = True
-imports = config.MEGAPIS.get('imports', ())
+imports = config.get('imports', ())
 
-global_config = config.MEGAPIS.get('global', {'redis': {'host': 'localhost', 'port': 6379}})
+global_config = config.get('global', {'redis': {'host': 'localhost', 'port': 6379}})
 
 '''
     'task-key': {
@@ -24,7 +24,7 @@ global_config = config.MEGAPIS.get('global', {'redis': {'host': 'localhost', 'po
     },
 
 '''
-tasks = config.MEGAPIS.get('tasks', {})
+tasks = config.get('tasks', {})
 
 beat_schedule = {}
 for task_key in tasks:
