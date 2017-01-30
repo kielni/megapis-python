@@ -1,3 +1,4 @@
 .DS_Store
 celerybeat-schedule.db
 megapis.egg-info/
+venv/*
