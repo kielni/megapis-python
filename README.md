@@ -4,6 +4,8 @@ Run tasks with [http://www.celeryproject.org](celery)
 
 ## Setup
 
+`source venv/bin/activate`
+
 in [megapis](megapis):
 
     pip install -e .
