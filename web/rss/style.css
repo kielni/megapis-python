@@ -1,0 +1,40 @@
+.story {
+  margin-bottom: 15px;
+}
+
+.text {
+  margin-bottom: 0.2em;
+}
+
+.story-title {
+  color: #000;
+  font-weight: bold;
+  font-size: 1.1em;
+  margin-bottom: 3px;
+}
+
+.story-img {
+  max-width: 25%;
+}
+
+h5 {
+  font-weight: normal;
+  font-size: 0.9em;
+}
+
+a {
+  color: #191970;
+}
+
+img {
+  max-width: 250px;
+}
+
+.col-md-9, .col-md-3 {
+  padding-left: 0;
+}
+
+.header {
+  border-bottom: 1px solid #ccc;
+  margin-bottom: 15px;
+}
