@@ -16,7 +16,7 @@
       <div v-for="item in items" class="row story">
         <div class="text-left" v-bind:class="{ 'col-md-9': item.image }">
           <h4 class="story-title"><a :href="item.url" target="story" v-on:click="read">{{item.title}}</a></h4>
-          <div class="text">{{item.summary}}</div>
+          <div class="text"><a :href="item.url" target="story" v-on:click="read">{{item.shortSummary}}</a></div>
           <h5><a :href="item.sourceLink">{{item.source}}</a> • {{item.dateStr}}</h5>
         </div>
         <div v-if="item.image" class="col-md-3">
@@ -31,7 +31,7 @@
   crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
-
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.4/lodash.min.js"></script>
     <script src="config.js"></script>
     <script src="rss.js"></script>
 

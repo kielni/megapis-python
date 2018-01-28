@@ -9,14 +9,29 @@ const app = new Vue({ // eslint-disable-line no-unused-vars
 
   mounted: function mounted() {
     items.then((data) => {
-      this.items = data.items.map(item => Object.assign({ dateStr: moment(item.date).format('MMM DD h:mma') }, item));
+      const items = data.items.map((item) => {
+        let short = item.summary.substr(0, 400);
+        const dt = moment(item.date);
+
+        if (item.summary.length > 500) {
+          short = short.substr(0, Math.min(short.length, short.lastIndexOf(' '))) + ' ...';
+        }
+        const obj = Object.assign({
+          dateStr: dt.format('MMM DD h:mma'),
+          ts: parseInt(dt.format('X')),
+          shortSummary: short,
+        }, item);
+        console.log(obj);
+        return obj;
+      });
+      this.items = _.sortBy(items, ['ts']);
       this.updated = moment(data.updated);
     });
   },
 
   computed: {
     updatedStr: function updatedStr() {
-      return this.updated ? this.updated.format('dddd, MMMM D, h:mm:ss a') : '';
+      return this.updated ? this.updated.format('dddd, MMMM D, h:mm a') : '';
     },
   },
 

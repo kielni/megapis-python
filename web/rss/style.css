@@ -26,6 +26,14 @@ a {
   color: #191970;
 }
 
+.text a {
+  color: #000;
+}
+
+.text a:hover {
+  text-decoration: none;
+}
+
 img {
   max-width: 250px;
 }
