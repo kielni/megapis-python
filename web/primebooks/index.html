@@ -34,9 +34,12 @@
                 <div v-html="book.description"></div>
                 <ul>
                   <li v-for="tag in book.tags">
-                    {{ tag }}
+                    {{tag}}
                   </li>
                 </ul>
+                <div>
+                    {{page}}
+                </div>
                 <div class="buttons">
                     <button class="save" v-on:click="star">
                         <i class="glyphicon glyphicon-star-empty"></i>

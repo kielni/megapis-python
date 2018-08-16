@@ -30,26 +30,34 @@ class PrimeBooksTask(MegapisTask):
         books = []
         fetched = []
         next_urls = []
-        log.info('loading %s config urls' % len(config['urls']))
+        log.info('loading %s config urls', len(config['urls']))
         for list_url in config['urls']:
-            rval = load_url(list_url, fetched, exclude)
+            rval = load_url(list_url, fetched, exclude, config['description_length'])
+            if not rval:
+                continue
             books = books + rval['books']
             next_urls = next_urls + rval['next_urls']
         log.info('loading %s more urls', len(next_urls))
         for list_url in next_urls:
-            rval = load_url(list_url, fetched, exclude)
+            rval = load_url(list_url, fetched, exclude, config['description_length'])
+            if not rval:
+                continue
             books = books + rval['books']
         log.info('found %s books', len(books))
         self.replace(config['output'], books)
 
 
-def load_url(list_url, fetched, exclude):
+def load_url(list_url, fetched, exclude, max_len):
     headers = {
         'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.95 Safari/537.36'
     }
     log.info('url=%s', list_url)
-    resp_text = requests.get(url=list_url, headers=headers).text
-    soup = BeautifulSoup(resp_text, 'html.parser')
+    try:
+        resp_text = requests.get(url=list_url, headers=headers).text
+        soup = BeautifulSoup(resp_text, 'html.parser')
+    except:
+        log.error('error loading %s: %s', list_url, sys.exc_info()[0])
+        return None
     # next page url
     next_urls = []
     next_link = soup.select('#pagnNextLink')
@@ -60,10 +68,16 @@ def load_url(list_url, fetched, exclude):
             if match:
                 next_page = '%s%s' % (match.group(1), next_page)
         next_urls.append(next_page)
+    # page meta
+    page = soup.title.string
+    for s in ['Amazon.com: ', 'Prime Eligible ', 'Kindle Edition ', 'Books', '-', ':']:
+        page = page.replace(s, '')
     books = []
     for book in soup.select('.s-result-item'):
         # list page: asin, title, author, url, image
         asin = book.get('data-asin')
+        if not book.select('.s-access-detail-page'):
+            continue
         details = book.select('.s-access-detail-page')[0]
         title = details.get('title')
         if asin in fetched:
@@ -94,8 +108,12 @@ def load_url(list_url, fetched, exclude):
             select('#bookDescription_feature_div noscript')[0].\
             get_text().\
             strip()
-        if len(desc) > config['description_length']:
-            desc = desc[:config['description_length']]+'...'
+        desc = desc.replace('.', '. ')
+        if len(desc) > max_len:
+            short = max_len
+            if ' ' in desc[max_len:]:
+                short = max_len + desc[max_len:].index(' ')
+            desc = desc[:short]+' ...'
         tags = []
         for tag in detail_soup.select('.zg_hrsr_item'):
             tags.append(re.sub('Kindle Store > Kindle eBooks > ',
@@ -111,7 +129,8 @@ def load_url(list_url, fetched, exclude):
             'author': author,
             'url': detail_soup.select('link[rel="canonical"]')[0].get('href'),
             'img': book.select('.a-col-left img')[0].get('src'),
-            'tag': '\n'.join(tags)
+            'tag': '\n'.join(tags),
+            'page': page
         }
         log.info('%s by %s', b['title'], b['author'])
         log.debug(b)
