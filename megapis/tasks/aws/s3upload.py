@@ -18,7 +18,8 @@ class S3UploadTask(MegapisTask):
         'key': 'filename',
         'acl': 'public-read',
         'transform': 'string',
-        'profile': 'megapis'
+        'profile': 'megapis',
+        'content_type': 'text/plain'
     }
 
     transforms = {
@@ -28,8 +29,8 @@ class S3UploadTask(MegapisTask):
 
     def run(self, consume=True):
         config = self.config
-        log.info('S3Upload.run: upload %s to %s/%s',
-                 config['name'], config['bucket'], config['key'])
+        log. info('upload %s to %s/%s consume=%s',
+                 config['name'], config['bucket'], config['key'], consume)
         if consume:
             values = self.consume(config['name'])
         else:
@@ -40,9 +41,11 @@ class S3UploadTask(MegapisTask):
         boto3.setup_default_session(profile_name=config['profile'])
         s3 = boto3.client('s3')
         if values:
+            if config['transform'] == 'string':
+                values = values[0]
             data = self.transforms[config['transform']](values)
-            content_type = 'application/json' if config['transform'] == 'json' else 'text/plain'
-            log.info('put %s/%s', config['bucket'], config['key'])
+            content_type = config.get('content_type')
+            log.info('put %s/%s as %s', config['bucket'], config['key'], content_type)
             log.info(s3.put_object(
                 ACL=config['acl'],
                 Body=data.encode('utf-8'),
