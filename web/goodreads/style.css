@@ -13,3 +13,7 @@ h3 {
 .starred {
     background-color: #ffffcc;
 }
+
+pre {
+    white-space: pre-wrap;
+}

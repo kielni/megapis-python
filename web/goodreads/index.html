@@ -2,45 +2,48 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
-    <link rel="stylesheet" href="style.css">
-
     <script src="https://www.gstatic.com/firebasejs/3.6.4/firebase.js"></script>
     <script src="config.js"></script>
     <script src="https://unpkg.com/vue/dist/vue.js"></script>
     <script
-        src="https://code.jquery.com/jquery-2.2.4.min.js"
-        integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="
-        crossorigin="anonymous"></script>
-
+      src="https://code.jquery.com/jquery-2.2.4.min.js"
+      integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="
+      crossorigin="anonymous"></script>
+    <script src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
+    <link rel="stylesheet" href="style.css">
   </head>
   <body class="container">
     <h1>Read next</h1>
     <div id="books">
-        <div class="list-group">
-            <book-card v-for="book in books" v-bind:book="book" @exclude="exclude"></book-card>
-        </div>
-
+      <div class="list-group container">
+        <book-card v-for="book in books" v-bind:book="book" @exclude="exclude"></book-card>
+      </div>
     </div>
 
     <script type="text/x-template" id="bookTemplate">
-        <div class="list-group-item" :id="cssId">
-            <div class="list-group-item-heading">
-                <h3><a :href="book.link" target="book">{{book.title}}</a></h3>
-                <h4>by {{book.author}} ({{book.published}})</h4>
-            </div>
-            <div class="list-group-item-text">
-                <div v-html="book.description"></div>
-                <div class="buttons">
-                    <button class="save" v-on:click="star">
-                        <i class="glyphicon glyphicon-star-empty"></i>
-                    </button>
-                    <button class="exclude" v-on:click="exclude">
-                        <i class="glyphicon glyphicon-remove"></i>
-                    </button>
-                </div>
-            </div>
+      <div class="list-group-item row" :id="cssId">
+        <div class="list-group-item-heading">
+          <h3><a :href="book.link" target="book">{{book.title}}</a></h3>
+            <h4>by {{book.author}} ({{book.published}})</h4>
         </div>
+        <div class="list-group-item-text">
+          <div class="col-md-6">
+            <div v-html="book.description"></div>
+            <div class="buttons">
+              <button class="save" v-on:click="star">
+                <i class="glyphicon glyphicon-star-empty"></i>
+              </button>
+              <button class="exclude" v-on:click="exclude">
+                <i class="glyphicon glyphicon-remove"></i>
+              </button>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <pre class="prettyprint">{{book.source}}</pre>
+          </div>
+        </div>
+      </div>
     </script>
 
     <script type="text/javascript">
@@ -88,34 +91,39 @@
                     this.books.splice(idx, 1);
                 }
                 */
-            }
-        },
+            },
+       },
 
         created: function() {
-            var self = this;
-            $.ajax({
-                url: 'goodreads.json',
-                method: 'GET',
-                success: function(data) {
-                    // sort series together
-                    var seriesExp = new RegExp('(.+?)\((.+?) #(\d+.*?)\)');
-                    data.forEach(function(book) {
-                        var parts = book.title.match(seriesExp);
-                        if (parts) {
-                            //["Specter (Debt Collector #11)", "Specter ", "Debt Collector", "11"]
-                            book.key = parts[1].trim()+': '+parts[2]+('000'+parts[3]).substr(-3);
-                        } else {
-                            book.key = book.title;
-                        }
-                    });
-                    data.sort(function(a, b) {
-                        return (a.key > b.key) ? 1 : ((b.key > a.key) ? -1 : 0);
-                    });
-                    self.books = data;
-                },
-                error: function(error) {
-                    alert(JSON.stringify(error));
-                }
+            var goodreads = $.ajax({url: 'goodreads.json'});
+            var exclude = firebase.database().ref('goodreads/exclude').once('value');
+            Promise.all([goodreads, exclude]).then(values => {
+                var data = values[0];
+                var excludeIds = Object.keys(values[1].val()) || [];
+                console.log('exclude=', excludeIds);
+                var seriesExp = new RegExp('(.+?)\((.+?) #(\d+.*?)\)');
+                data = JSON.parse(data).filter((book) => {
+                    return excludeIds.indexOf(book.id) < 0;
+                });
+                // sort series together
+                data.forEach(function(book) {
+                    var parts = book.title.match(seriesExp);
+                    if (parts) {
+                        //["Specter (Debt Collector #11)", "Specter ", "Debt Collector", "11"]
+                        book.key = parts[1].trim()+': '+parts[2]+('000'+parts[3]).substr(-3);
+                    } else {
+                        book.key = book.title;
+                    }
+                    var pre = JSON.parse(JSON.stringify(book));
+                    delete pre.description;
+                    book.source = JSON.stringify(pre, null, 2);
+                });
+                data.sort(function(a, b) {
+                    return (a.key > b.key) ? 1 : ((b.key > a.key) ? -1 : 0);
+                });
+                // start at a random point
+                const start = Math.round(Math.random() * data.length);
+                this.books = data.slice(start).concat(data.slice(0, start));
             });
         },
     });
