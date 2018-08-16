@@ -1,9 +1,13 @@
-const items = pegasus(config.storiesURL);
+const url = new URL(location.href);
+const key = url.searchParams.get('u') || 'kimberly';
+const items = pegasus(config[key].storiesURL);
 
 const app = new Vue({ // eslint-disable-line no-unused-vars
   el: '#app',
   data: {
     items: [],
+    imageItems: [],
+    textItems: [],
     updated: null,
   },
 
@@ -24,7 +28,10 @@ const app = new Vue({ // eslint-disable-line no-unused-vars
         console.log(obj);
         return obj;
       });
-      this.items = _.sortBy(items, ['ts']);
+      const grouped = _.groupBy(_.sortBy(items, ['ts']), item => item.image ? 'image': 'text');
+
+      this.imageItems = grouped.image;
+      this.textItems = grouped.text;
       this.updated = moment(data.updated);
     });
   },
@@ -37,10 +44,12 @@ const app = new Vue({ // eslint-disable-line no-unused-vars
 
   methods: {
     read: function(ev) {
-      // on click href, post url and title to webhook
+      // on click href, post url and source to webhook
+      const source = $(ev.target).parent().parent().find('.source').text();
       const body = {
         value1: ev.target.href,
-        balue2: $(ev.target).text(),
+        value2: source.replace(/\W+/g, ' '),
+        value3: key,
       };
 
       $.post(config.webhookURL, body);

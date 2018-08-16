@@ -16,14 +16,6 @@ import rss
 logging.basicConfig(level=logging.INFO)
 log = get_task_logger(__name__)
 
-'''
-    TODO:
-    - get sources from JSON URL: http://megapis.s3.amazonaws.com/rss/sources.json
-    - move real work to a different file without task/celery dependencies
-    - add lambda.py to call from AWS
-    - set up on AWS Lambda to run daily
-    - set max length
-'''
 class RssTask(MegapisTask):
     default_config = {
         'sources': '',
