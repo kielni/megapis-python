@@ -28,7 +28,7 @@ const app = new Vue({ // eslint-disable-line no-unused-vars
         console.log(obj);
         return obj;
       });
-      const grouped = _.groupBy(_.sortBy(items, ['ts']), item => item.image ? 'image': 'text');
+      const grouped = _.groupBy(_.sortBy(items, ['source']), item => item.image ? 'image': 'text');
 
       this.imageItems = grouped.image;
       this.textItems = grouped.text;
