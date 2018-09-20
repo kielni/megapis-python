@@ -73,9 +73,9 @@ def get_current(details):
     # get results
     r = s.get('https://www.nationalcar.com/content/data/apis/live/reservation/vehicleList.sfx.json/channelName%3Dnationalcar_com/locale%3Den_US.json')
     for car in r.json()['vehicleSummary']['vehicleDetail']:
-        log.debug('%s = %s', car['name'], car['vehicleRate']['totalPrice'])
+        log.info('%s = %s', car['name'], car['vehicleRate']['highestUsedPayLaterRate'])
         if car['name'] == details['car_type']:
-            return float(car['vehicleRate']['totalPrice'])
+            return float(car['vehicleRate']['highestUsedPayLaterRate'])
     return None
 
 
