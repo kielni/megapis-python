@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Steam new releases</title>
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
+    <style type="text/css">
+    body, .list-group-item {
+        background: #1b2838;
+        color: #acb2b8;
+    }
+    .list-group-item {
+        border: 1px solid #4582A5;
+    }
+    a {
+        color: #67c1f5;
+    }
+    .title {
+        color: #fff;
+    }
+    .badge {
+        margin-right: 10px;
+        font-size: 14px;
+    }
+    .badge-default {
+        color: #67c1f5;
+        background-color: rgba( 103, 193, 245, 0.2 );
+    }
+    h2 {
+        font-size: 20px;
+    }
+    h3 {
+        font-size: 16px;
+    }
+    .row {
+        width: 80%;
+    }
+    .steam-new-releases .description img {
+        clear: both;
+        max-width: 300px;
+        float: left;
+        margin: 20px;
+    }
+    .steam-new-releases .description {
+        clear: both;
+    }
+    .steam-new-releases .thumbnail {
+        padding-left: 0;
+    }
+    </style>
+  </head>
+  <body class="container-fluid steam-new-releases">
+    <h1>{{count}} Steam new releases</h1>
+    <ul class="list-group">
+    {{#each data}}
+        <li class="list-group-item flex-column align-items-start">
+            <div class="d-flex w-100 justify-content-between">
+            </div>
+            <div class="d-flex w-100 mb-2 container-fluid">
+                <div class="row">
+                    <div class="col-md-4 thumbnail">
+                        <img src="{{img}}" align="left" class="img-thumbnail">
+                    </div>
+                    <div class="col-md-8">
+                        <h4 class="title"><a target="steam" href="{{url}}">{{title}}</a></h4>
+                        <div class="tags">
+                        {{#each tags}}
+                            <span class="badge badge-default">{{this}}</span>
+                        {{/each}}
+                        </div>
+                        <div class="players">
+                        {{#each players}}
+                            <span class="badge badge-default">{{this}}</span>
+                        {{/each}}
+                        </div>
+                        <div class="reviews">{{reviews}}</div>
+                    </div>
+                </div>
+            </div>
+            <div class="d-flex w-100 description">
+                {{{description}}}
+            </div>
+            <div class="d-flex w-100 mb-1">
+                <small>{{date}}</small>
+            </div>
+        </li>
+    {{/each}}
+    </ul>
+    <script src="https://code.jquery.com/jquery-3.1.1.slim.min.js" integrity="sha384-A7FZj7v+d/sdmMqp/nOQwliLvUsJfDHW+k9Omg/a/EheAdgtzNs3hpfag6Ed950n" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js" integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js" integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn" crossorigin="anonymous"></script>
+  </body>
+</html>

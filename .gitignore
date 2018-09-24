@@ -2,3 +2,6 @@
 celerybeat-schedule.db
 megapis.egg-info/
 venv/*
+.Python
+.ipynb_checkpoints/
+Untitled.ipynb
