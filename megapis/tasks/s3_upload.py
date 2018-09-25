@@ -33,13 +33,13 @@ class S3UploadTask(TaskBase):
         boto3.setup_default_session(profile_name=self.config['profile'])
         s3 = boto3.client('s3')
         if data:
-            data = TRANSFORMS[self.config['transform']](data)
+            output = TRANSFORMS[self.config['transform']](data)
             content_type = self.config['content_type']
             print('put %s/%s as %s' % (
                 self.config['bucket'], self.config['key'], content_type))
             print(s3.put_object(
                 ACL=self.config['acl'],
-                Body=data.encode('utf-8'),
+                Body=output.encode('utf-8'),
                 Bucket=self.config['bucket'],
                 ContentType=content_type,
                 Key=self.config['key']))

@@ -4,6 +4,7 @@ import sys
 
 from megapis.tasks.goodreads import GoodreadsTask
 from megapis.tasks.hbs_to_html import HbsToHtmlTask
+#from megapis.tasks.local_file import LocalFileTask
 from megapis.tasks.prime_books import PrimeBooksTask
 from megapis.tasks.parse_rss import RssTask
 from megapis.tasks.s3_upload import S3UploadTask
