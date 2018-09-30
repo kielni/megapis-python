@@ -9,8 +9,8 @@ DEFAULT_CONFIG = {
     'key': 'filename',
     'acl': 'public-read',
     'transform': 'string',
-    'profile': 'megapis',
-    'content_type': 'text/plain'
+    'profile': None,
+    'contentType': 'text/plain'
 }
 
 TRANSFORMS = {
@@ -34,7 +34,7 @@ class S3UploadTask(TaskBase):
         s3 = boto3.client('s3')
         if data:
             output = TRANSFORMS[self.config['transform']](data)
-            content_type = self.config['content_type']
+            content_type = self.config['contentType']
             print('put %s/%s as %s' % (
                 self.config['bucket'], self.config['key'], content_type))
             print(s3.put_object(

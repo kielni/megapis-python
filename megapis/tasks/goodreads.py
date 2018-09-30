@@ -39,13 +39,16 @@ class GoodreadsTask(TaskBase):
         print('read=%s authors=%s' % (len(read), len(authors)))
 
         exclude = requests.get(url=config['exclude_url']).json() if config['exclude_url'] else []
-        print('found %s books to exclude %s' % (len(exclude), exclude))
+        print('found %s books to exclude' % (len(exclude)))
         # get list of books for each author
         books = []
         for author_id in authors:
-            resp = requests.get(
-                url='https://www.goodreads.com/author/list/%s' % author_id,
-                params={'format': 'xml', 'per_page': 100, 'key': config['api_key']})
+            try:
+                resp = requests.get(
+                    url='https://www.goodreads.com/author/list/%s' % author_id,
+                    params={'format': 'xml', 'per_page': 100, 'key': config['api_key']})
+            except:
+                continue
             author_books = xmltodict.parse(resp.content)\
                 ['GoodreadsResponse']['author']['books']['book']
             # one book is an object, not list
@@ -71,5 +74,4 @@ class GoodreadsTask(TaskBase):
                 books.append(book_obj)
             # rate limit 1 per second
             time.sleep(1)
-        print('saving %s books to %s' % (len(books), config['output']))
-        self.replace(config['output'], books)
+        return books
