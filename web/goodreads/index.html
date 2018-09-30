@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <script src="https://www.gstatic.com/firebasejs/3.6.4/firebase.js"></script>
     <script src="config.js"></script>
-    <script src="https://unpkg.com/vue/dist/vue.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.5.17/dist/vue.js"></script>
     <script
       src="https://code.jquery.com/jquery-2.2.4.min.js"
       integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="
@@ -14,119 +14,148 @@
     <link rel="stylesheet" href="style.css">
   </head>
   <body class="container">
-    <h1>Read next</h1>
     <div id="books">
+      <h1>
+        Read next
+        <span v-if="ready">({{showBooks.length}} / {{books.length}})</span>
+        <span v-else>...</span>
+
+        <div class="pull-right">
+          <button class="btn btn-default" v-on:click="randomSort">Randomize</button>
+        </div>
+      </h1>
       <div class="list-group container">
-        <book-card v-for="book in books" v-bind:book="book" @exclude="exclude"></book-card>
+        <book-card v-for="book in showBooks" v-bind:book="book" @exclude="exclude" :key="book.index"></book-card>
       </div>
     </div>
 
-    <script type="text/x-template" id="bookTemplate">
-      <div class="list-group-item row" :id="cssId">
-        <div class="list-group-item-heading">
-          <h3><a :href="book.link" target="book">{{book.title}}</a></h3>
-            <h4>by {{book.author}} ({{book.published}})</h4>
-        </div>
-        <div class="list-group-item-text">
-          <div class="col-md-6">
-            <div v-html="book.description"></div>
-            <div class="buttons">
-              <button class="save" v-on:click="star">
-                <i class="glyphicon glyphicon-star-empty"></i>
-              </button>
-              <button class="exclude" v-on:click="exclude">
-                <i class="glyphicon glyphicon-remove"></i>
-              </button>
-            </div>
-          </div>
-          <div class="col-md-6">
-            <pre class="prettyprint">{{book.source}}</pre>
-          </div>
+<script type="text/x-template" id="bookTemplate">
+  <div class="list-group-item row" :id="cssId">
+    <div class="list-group-item-heading">
+      <h3><a :href="book.link" target="book">{{book.title}}</a></h3>
+        <h4>by {{book.author}} ({{book.published}})</h4>
+    </div>
+    <div class="list-group-item-text">
+      <div class="col-md-8">
+        <div v-html="book.description"></div>
+        <div class="buttons">
+          <button class="save" v-on:click="star">
+            <i class="glyphicon glyphicon-star-empty"></i>
+          </button>
+          <button class="exclude" v-on:click="exclude">
+            <i class="glyphicon glyphicon-remove"></i>
+          </button>
         </div>
       </div>
-    </script>
+      <div class="col-md-4">
+        <img v-bind:src="book.image_url">
+      </div>
+    </div>
+  </div>
+</script>
 
-    <script type="text/javascript">
-    Vue.component('book-card', {
-        props: ['book'],
-        template: '#bookTemplate',
+<script type="text/javascript">
+  Vue.component('book-card', {
+    props: ['book'],
+    template: '#bookTemplate',
 
-        computed: {
-            cssId: function() {
-                return 'book'+this.book.id;
-            }
-        },
+    computed: {
+      cssId: function() {
+        return 'book'+this.book.id;
+      }
+    },
 
-        methods: {
-            star: function(ev) {
-                $('#'+this.cssId).addClass('starred');
-            },
+    methods: {
+      star: function(ev) {
+        $('#'+this.cssId).addClass('starred');
+      },
 
-            exclude: function(ev) {
-                var bookId = this.book.id;
-                console.log('exclude '+this.book.id);
-                firebase.database().ref('goodreads/exclude/' + bookId).set(true);
-                $('#'+this.cssId).hide();
-                this.$emit('exclude', this.book.id);
-            }
+      exclude: function(ev) {
+        var bookId = this.book.id;
+        console.log('exclude '+this.book.id);
+        firebase.database().ref('goodreads/exclude/' + bookId).set(true);
+        $('#'+this.cssId).hide();
+        this.$emit('exclude', this.book.id);
+      }
+    }
+  });
+
+var App = new Vue({
+    el: '#books',
+
+    data: {
+      books: [],
+      showBooks: [],
+      ready: false,
+    },
+
+    methods: {
+      exclude: function(id) {
+        console.log('root exclude '+id);
+        /*
+        this is too slow
+        var idx = this.books.findIndex(function(book) {
+            return book.id === id;
+        });
+        if (idx >= 0) {
+            this.books.splice(idx, 1);
         }
-    });
+        */
+      },
 
-    var App = new Vue({
-        el: '#books',
+      subset: function() {
+        // start at a random point
+        const start = Math.round(Math.random() * (this.books.length - 100));
+        this.showBooks.data.slice(start, start + 100);
+      },
 
-        data: {
-            books: []
-        },
+      randomSort: function() {
+        const books = [];
 
-        methods: {
-            exclude: function(id) {
-                console.log('root exclude '+id);
-                /*
-                this is too slow
-                var idx = this.books.findIndex(function(book) {
-                    return book.id === id;
-                });
-                if (idx >= 0) {
-                    this.books.splice(idx, 1);
-                }
-                */
-            },
-       },
+        this.ready = false;
+        for (let i = 0; i < 100; i += 1) {
+          books.push(this.books[Math.round(Math.random() * this.books.length)]);
+        }
+        this.showBooks = books;
+        this.ready = true;
+      },
+   },
 
-        created: function() {
-            var goodreads = $.ajax({url: 'goodreads.json'});
-            var exclude = firebase.database().ref('goodreads/exclude').once('value');
-            Promise.all([goodreads, exclude]).then(values => {
-                var data = values[0];
-                var excludeIds = Object.keys(values[1].val()) || [];
-                console.log('exclude=', excludeIds);
-                var seriesExp = new RegExp('(.+?)\((.+?) #(\d+.*?)\)');
-                data = JSON.parse(data).filter((book) => {
-                    return excludeIds.indexOf(book.id) < 0;
-                });
-                // sort series together
-                data.forEach(function(book) {
-                    var parts = book.title.match(seriesExp);
-                    if (parts) {
-                        //["Specter (Debt Collector #11)", "Specter ", "Debt Collector", "11"]
-                        book.key = parts[1].trim()+': '+parts[2]+('000'+parts[3]).substr(-3);
-                    } else {
-                        book.key = book.title;
-                    }
-                    var pre = JSON.parse(JSON.stringify(book));
-                    delete pre.description;
-                    book.source = JSON.stringify(pre, null, 2);
-                });
-                data.sort(function(a, b) {
-                    return (a.key > b.key) ? 1 : ((b.key > a.key) ? -1 : 0);
-                });
-                // start at a random point
-                const start = Math.round(Math.random() * data.length);
-                this.books = data.slice(start).concat(data.slice(0, start));
-            });
-        },
-    });
-    </script>
+    created: function() {
+      const goodreads = $.ajax({url: 'goodreads.json'});
+      const exclude = firebase.database().ref('goodreads/exclude').once('value');
+
+      Promise.all([goodreads, exclude]).then(values => {
+        let data = values[0];
+        const excludeIds = Object.keys(values[1].val()) || [];
+        //console.log('exclude=', excludeIds);
+        const seriesExp = new RegExp('(.+?)\((.+?) #(\d+.*?)\)');
+        let idx = 0;
+
+        data = data.filter(book => excludeIds.indexOf(book.id) < 0);
+        // sort series together
+        data.forEach(function(book) {
+          const parts = book.title.match(seriesExp);
+
+          if (parts) {
+              //["Specter (Debt Collector #11)", "Specter ", "Debt Collector", "11"]
+              book.key = parts[1].trim()+': '+parts[2]+('000'+parts[3]).substr(-3);
+          } else {
+              book.key = book.title;
+          }
+          book.index = idx;
+          const pre = JSON.parse(JSON.stringify(book));
+          delete pre.description;
+          book.source = JSON.stringify(pre, null, 2);
+          idx += 1;
+          console.log(`${book.index}\t${book.title}`);
+        });
+        data.sort((a, b) => (a.key > b.key) ? 1 : ((b.key > a.key) ? -1 : 0));
+        this.books = data;
+        this.randomSort();
+      });
+    },
+});
+</script>
   </body>
 </html>
