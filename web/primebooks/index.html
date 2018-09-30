@@ -7,116 +7,117 @@
 
     <script src="https://www.gstatic.com/firebasejs/3.6.4/firebase.js"></script>
     <script src="config.js"></script>
-    <script src="https://unpkg.com/vue/dist/vue.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.5.17/dist/vue.js"></script>
     <script
-        src="https://code.jquery.com/jquery-2.2.4.min.js"
-        integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="
-        crossorigin="anonymous"></script>
-
+      src="https://code.jquery.com/jquery-2.2.4.min.js"
+      integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="
+      crossorigin="anonymous">
+    </script>
   </head>
   <body class="container">
     <h1>Prime Books</h1>
     <div id="books">
-        <div class="list-group">
-            <book-card v-for="book in books" v-bind:book="book" @exclude="exclude"></book-card>
-        </div>
-
+      <div class="list-group">
+        <book-card v-for="book in books" v-bind:book="book" @exclude="exclude" :key="book.asin"></book-card>
+      </div>
     </div>
 
-    <script type="text/x-template" id="bookTemplate">
-        <div class="list-group-item row" :id="cssId">
-            <div class="list-group-item-heading col-md-2">
-                <img :src="book.img" class="book-thumbnail">
-            </div>
-            <div class="list-group-item-text col-md-9">
-                <h3><a :href="book.url" target="book">{{book.title}}</a></h3>
-                <h4>by {{book.author}}</h4>
-                <div v-html="book.description"></div>
-                <ul>
-                  <li v-for="tag in book.tags">
-                    {{tag}}
-                  </li>
-                </ul>
-                <div>
-                    {{page}}
-                </div>
-                <div class="buttons">
-                    <button class="save" v-on:click="star">
-                        <i class="glyphicon glyphicon-star-empty"></i>
-                    </button>
-                    <button class="exclude" v-on:click="exclude">
-                        <i class="glyphicon glyphicon-remove"></i>
-                    </button>
-                </div>
-            </div>
+<script type="text/x-template" id="bookTemplate">
+  <div class="list-group-item row" :id="cssId">
+    <div class="col-md-2">
+      <div class="list-group-item-heading">
+        <img :src="book.img" class="book-thumbnail">
+      </div>
+    </div>
+    <div class="col-md-9">
+      <div class="list-group-item-text">
+        <h3><a :href="book.url" target="book">{{book.title}}</a></h3>
+        <h4>by {{book.author}}</h4>
+        <div v-html="book.description"></div>
+        <ul>
+          <li v-for="tag in book.tags">
+            {{tag}}
+          </li>
+        </ul>
+        <div class="buttons">
+          <button class="save" v-on:click="star">
+            <i class="glyphicon glyphicon-star-empty"></i>
+          </button>
+          <button class="exclude" v-on:click="exclude">
+            <i class="glyphicon glyphicon-remove"></i>
+          </button>
         </div>
-    </script>
+      </div>
+    </div>
+  </div>
+</script>
 
-    <script type="text/javascript">
-    Vue.component('book-card', {
-        props: ['book'],
-        template: '#bookTemplate',
+<script type="text/javascript">
+  Vue.component('book-card', {
+    props: ['book'],
+    template: '#bookTemplate',
 
-        computed: {
-            cssId: function() {
-                return 'book'+this.book.asin;
-            }
-        },
+    computed: {
+      cssId: function() {
+        return `book${this.book.asin}`;
+      }
+    },
 
-        methods: {
-            star: function(ev) {
-                $('#'+this.cssId).addClass('starred');
-            },
+    methods: {
+      star: function(ev) {
+        $('#'+this.cssId).addClass('starred');
+      },
 
-            exclude: function(ev) {
-                var bookId = this.book.asin;
-                console.log('exclude '+this.book.asin);
-                firebase.database().ref('primebooks/exclude/' + bookId).set(true);
-                $('#'+this.cssId).hide();
-                this.$emit('exclude', this.book.asin);
-            }
+      exclude: function(ev) {
+        const bookId = this.book.asin;
+
+        console.log('exclude '+this.book.asin);
+        firebase.database().ref(`primebooks/exclude/${bookId}`).set(true);
+        $(`#${this.cssId}`).hide();
+        this.$emit('exclude', this.book.asin);
+      }
+    }
+  });
+
+  var App = new Vue({
+    el: '#books',
+
+    data: {
+      books: []
+    },
+
+    methods: {
+      exclude: function(id) {
+        console.log('root exclude '+id);
+        /*
+        this is too slow
+        var idx = this.books.findIndex(function(book) {
+            return book.id === id;
+        });
+        if (idx >= 0) {
+            this.books.splice(idx, 1);
         }
-    });
+        */
+      }
+    },
 
-    var App = new Vue({
-        el: '#books',
-
-        data: {
-            books: []
+    created: function() {
+      var self = this;
+      $.ajax({
+        url: 'primebooks.json',
+        method: 'GET',
+        success: function(data) {
+          data.forEach(function(book) {
+            book.tags = book.tag.split('\n');
+          });
+          self.books = data;
         },
-
-        methods: {
-            exclude: function(id) {
-                console.log('root exclude '+id);
-                /*
-                this is too slow
-                var idx = this.books.findIndex(function(book) {
-                    return book.id === id;
-                });
-                if (idx >= 0) {
-                    this.books.splice(idx, 1);
-                }
-                */
-            }
-        },
-
-        created: function() {
-            var self = this;
-            $.ajax({
-                url: 'primebooks.json',
-                method: 'GET',
-                success: function(data) {
-                    data.forEach(function(book) {
-                        book.tags = book.tag.split('\n');
-                    });
-                    self.books = data;
-                },
-                error: function(error) {
-                    alert(JSON.stringify(error));
-                }
-            });
-        },
-    });
-    </script>
+        error: function(error) {
+          alert(JSON.stringify(error));
+        }
+      });
+    },
+  });
+  </script>
   </body>
 </html>
