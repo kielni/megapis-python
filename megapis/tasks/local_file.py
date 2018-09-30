@@ -1,7 +1,5 @@
 import json
 
-import boto3
-
 from megapis.tasks.task_base import TaskBase
 
 DEFAULT_CONFIG = {

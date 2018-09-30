@@ -81,19 +81,29 @@ class SteamLibraryTask(TaskBase):
         meta = {}
         meta['title'] = soup.select_one('.apphub_AppName').string
         text = str(soup.select_one('#game_area_description'))
-        text = re.sub(r'id=".*?"', '', text).replace('<h2>About This Game</h2', '')
+        text = re.sub(r'id=".*?"', '', text).replace('<h2>About This Game</h2>', '')
+        text = re.sub(r'(<br>)+', '<br>', text).replace('</br>', '')
         meta['description'] = text
         meta['players'] = []
         meta['tags'] = []
         for detail in [s.string for s in soup.select('.game_area_details_specs a.name')]:
-            key = 'players' if 'player' in detail.lower() else 'tags'
-            if detail in meta[key] or detail in self.config['excludeTags']:
+            if detail in self.config['excludeTags']:
                 continue
-            meta[key].append(detail)
+            if 'player' in detail.lower():
+                val = _normalize_players(detail)
+                if val not in meta['players']:
+                    meta['players'].append(val)
+            else:
+                meta['tags'].append(detail)
         for tag in [s.string.strip() for s in soup.select('.glance_tags .app_tag')]:
             if tag in meta['tags'] or tag in self.config['excludeTags']:
                 continue
-            meta['tags'].append(tag)
+            if 'player' in tag.lower():
+                val = _normalize_players(tag)
+                if val not in meta['players']:
+                    meta['players'].append(val)
+            else:
+                meta['tags'].append(tag)
         text = soup.select('.details_block .linkbar')
         meta['genres'] = [g.string for g in text if '/genre/' in g['href']]
         print('new game %s\t%s\t%s' % (appid, meta['title'], ', '.join(meta['tags'])))
@@ -115,3 +125,11 @@ class SteamLibraryTask(TaskBase):
         for game in resp.json()['data']:
             library[game['appid']] = game
         return library
+
+
+def _normalize_players(text):
+    val = text.lower()
+    for player in ['single', 'multi']:
+        if player in val:
+            val = player
+    return val
