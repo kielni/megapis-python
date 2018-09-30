@@ -27,8 +27,8 @@ class SteamNewReleasesTask(TaskBase):
         self.default_config = DEFAULT_CONFIG
         super(SteamNewReleasesTask, self).__init__(config)
         now = datetime.now()
-        self.min_dt = now - timedelta(days=self.config['max_age'])
-        self.max_dt = now - timedelta(days=self.config['min_age'])
+        self.min_dt = now - timedelta(days=int(self.config['max_age']))
+        self.max_dt = now - timedelta(days=int(self.config['min_age']))
         self.exclude = None
         if self.config['exclude']:
             self.exclude = re.compile(self.config['exclude'])

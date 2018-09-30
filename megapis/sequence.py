@@ -1,6 +1,12 @@
+'''
+    run task sequences
+
+    sequence.run_sequence('steam-library')
+'''
 import argparse
 import os
 import sys
+import time
 
 from megapis.tasks.goodreads import GoodreadsTask
 from megapis.tasks.hbs_to_html import HbsToHtmlTask
@@ -22,25 +28,13 @@ SEQUENCES = {
 
 def run(tasks, config):
     '''run a list of tasks'''
+    ts = time.time()
     data = None
     for task in tasks:
         task_obj = task(config)
         print('\nrun %s\n' % task_obj)
         data = task_obj.run(data)
-    print('\ndone %s tasks' % len(tasks))
-
-'''
-    AWS lambda entry functions
-    get config from environment
-'''
-def lambda_steam_new_releases(event=None, context=None): #pylint: disable=unused-argument
-    run(SEQUENCES['steam-new-releases'], os.environ)
-
-def lambda_rss(event=None, context=None): #pylint: disable=unused-argument
-    run(SEQUENCES['rss'], os.environ)
-
-def lambda_rss_evan(event=None, context=None): #pylint: disable=unused-argument
-    run(SEQUENCES['rss-evan'], os.environ)
+    print('\ndone %s tasks in %ss' % (len(tasks), time.time() - ts))
 
 '''
     command line
@@ -58,7 +52,9 @@ def run_sequence(name):
         print('error importing localconfig')
         sys.exit(1)
     # run
-    print('sequence=%s\nconfig=%s' % (SEQUENCES[name], TASKS_CONFIG.get(name, {})))
+    print('sequence=%s\nconfig=%s' % (
+        [str(seq) for seq in SEQUENCES[name]],
+        TASKS_CONFIG.get(name, {})))
     run(SEQUENCES[name], TASKS_CONFIG.get(name, {}))
 
 if __name__ == '__main__':

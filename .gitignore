@@ -6,3 +6,4 @@ venv/*
 .ipynb_checkpoints/
 Untitled.ipynb
 megapis.ipynb
+deploy

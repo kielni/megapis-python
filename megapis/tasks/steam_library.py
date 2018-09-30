@@ -10,11 +10,7 @@ DEFAULT_CONFIG = {
     'apiKey': '',
     'steamId': '',
     'libraryUrl': '',
-    'excludeTags': [
-        '+', 'Valve', 'Valve Anti-Cheat enabled', 'Steam Trading Cards',
-        'Captions available', 'Steam Workshop', 'Steam Cloud', 'Steam Achievements',
-        'Commentary available'
-    ],
+    'excludeTags': '+|Valve|Valve Anti-Cheat enabled|Steam Trading Cards|Captions available|Steam Workshop|Steam Cloud|Steam Achievements|Commentary available',
 }
 
 class SteamLibraryTask(TaskBase):
@@ -86,8 +82,9 @@ class SteamLibraryTask(TaskBase):
         meta['description'] = text
         meta['players'] = []
         meta['tags'] = []
+        exclude_tags = (self.config['excludeTags'] or '').split('|')
         for detail in [s.string for s in soup.select('.game_area_details_specs a.name')]:
-            if detail in self.config['excludeTags']:
+            if detail in exclude_tags:
                 continue
             if 'player' in detail.lower():
                 val = _normalize_players(detail)
@@ -96,7 +93,7 @@ class SteamLibraryTask(TaskBase):
             else:
                 meta['tags'].append(detail)
         for tag in [s.string.strip() for s in soup.select('.glance_tags .app_tag')]:
-            if tag in meta['tags'] or tag in self.config['excludeTags']:
+            if tag in meta['tags'] or tag in exclude_tags:
                 continue
             if 'player' in tag.lower():
                 val = _normalize_players(tag)
