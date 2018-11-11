@@ -35,7 +35,7 @@ class RssTask(TaskBase):
         # load urls from json
         sources = requests.get(self.config['sources']).json()
         for url in sources.keys():
-            data = feedparser.parse(url)
+            data = feedparser.parse(url) # pylint: disable=no-member
             saved = 0
             print('\n%s\t%s' % (url, data.get('feed', {}).get('title')))
             print('\t%s entries' % (len(data['entries'])))
@@ -56,30 +56,45 @@ class RssTask(TaskBase):
                 saved += 1
                 if saved == sources[url].get('stories', self.config['max_items']):
                     break
-        print('%s items to %s/%s' % (len(items)))
+        print('%s items' % (len(items)))
         for url in empty:
             print('\nWARNING: no entries for %s' % url)
         return {'items': items, 'updated': datetime.now().astimezone(self.tz).isoformat()}
 
-
-    def _parse_entry(self, entry, output):
-        #print(entry)
+    def _published_date(self, entry):
+        '''look for date in published_parsed, dc:date, updated_parsed, url'''
+        # <dc:date>2018-11-01T12:45:00+00:00</dc:date>
         dt = None
         if 'published_parsed' in entry:
             try:
                 dt = datetime.fromtimestamp(time.mktime(entry.published_parsed))
             except:
                 print('error parsing %s' % str(entry.published_parsed))
-        else:
+        if 'dc:date' in entry:
+            try:
+                dt = parser.parse(entry['dc:date'])
+            except:
+                print('error parsing %s' % str(entry['dc:date']))
+        if 'updated_parsed' in entry:
+            try:
+                dt = datetime.fromtimestamp(time.mktime(entry.updated_parsed))
+            except:
+                print('error parsing %s' % str(entry.updated_parsed))
+        if not dt:
             # look for date in URL
             match = self.date_re.search(entry.link)
             if match:
                 dt = parser.parse(match.group(0))
         if not dt:
-            print('warning: no timestamp for entry %s' % entry.title)
+            print('warning: no timestamp for entry %s' % entry.keys())
             dt = datetime.fromtimestamp(int(self.min_dt.timestamp()))
         if dt.tzinfo is None or dt.tzinfo.utcoffset(dt) is None:
             dt = dt.astimezone(self.tz)
+        return dt
+
+    def _parse_entry(self, entry, output):
+        print(entry.title)
+        dt = self._published_date(entry)
         if output:
             prefix = '- ' if dt < self.min_dt else '✓ '
             print('\t%s%s\t%s' % (prefix, dt.strftime('%-m/%-d'), entry.title[:80]))
@@ -92,7 +107,7 @@ class RssTask(TaskBase):
             html = entry.get(key)
             if isinstance(html, list):
                 html = html[0]
-            elif isinstance(html, dict):
+            if isinstance(html, dict):
                 html = html.get('value')
             #print('html=|%s|' % html)
             if not html:

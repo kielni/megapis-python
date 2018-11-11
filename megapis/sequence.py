@@ -52,9 +52,7 @@ def run_sequence(name):
         print('error importing localconfig')
         sys.exit(1)
     # run
-    print('sequence=%s\nconfig=%s' % (
-        [str(seq) for seq in SEQUENCES[name]],
-        TASKS_CONFIG.get(name, {})))
+    print('sequence=%s' % ([str(seq) for seq in SEQUENCES[name]]))
     run(SEQUENCES[name], TASKS_CONFIG.get(name, {}))
 
 if __name__ == '__main__':
