@@ -40,5 +40,5 @@ def steam_library(event=None, context=None): #pylint: disable=unused-argument
 def rss(event=None, context=None): #pylint: disable=unused-argument
     seq.run(seq.SEQUENCES['rss'], os.environ)
 
-def lambda_rss_evan(event=None, context=None): #pylint: disable=unused-argument
+def rss_evan(event=None, context=None): #pylint: disable=unused-argument
     seq.run(seq.SEQUENCES['rss-evan'], os.environ)
