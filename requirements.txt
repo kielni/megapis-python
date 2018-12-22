@@ -1,7 +1,7 @@
 bs4==0.0.1
 python-dateutil==2.6.1
 pybars3==0.9.3
-boto3==1.7.28
+boto3==1.9.57
 feedparser==5.2.1
 requests==2.18.4
 xmltodict==0.11.0

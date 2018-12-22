@@ -4,7 +4,6 @@
     sequence.run_sequence('steam-library')
 '''
 import argparse
-import os
 import sys
 import time
 
@@ -21,7 +20,7 @@ SEQUENCES = {
     'goodreads': [GoodreadsTask, S3UploadTask],
     'prime-books': [PrimeBooksTask, S3UploadTask],
     'rss': [RssTask, S3UploadTask],
-    'rss-e': [RssTask, S3UploadTask],
+    'rss-evan': [RssTask, S3UploadTask],
     'steam-library': [SteamLibraryTask, S3UploadTask],
     'steam-new-releases': [SteamNewReleasesTask, HbsToHtmlTask, S3UploadTask],
 }
