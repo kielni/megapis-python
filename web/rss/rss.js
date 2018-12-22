@@ -1,5 +1,5 @@
 const url = new URL(location.href);
-const key = url.searchParams.get('u') || 'kimberly';
+const key = url.searchParams.get('u');
 const items = pegasus(config[key].storiesURL);
 
 const app = new Vue({ // eslint-disable-line no-unused-vars
@@ -44,7 +44,10 @@ const app = new Vue({ // eslint-disable-line no-unused-vars
 
   methods: {
     read: function(ev) {
-      // on click href, post url and source to webhook
+      // on click href, post url and source to webhook if configured
+      if (!config.webhookURL || !config[key].webhook) {
+        return;
+      }
       const source = $(ev.target).parent().parent().find('.source').text();
       const body = {
         value1: ev.target.href,
