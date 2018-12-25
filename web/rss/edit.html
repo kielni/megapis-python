@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <script src="https://unpkg.com/@typicode/pegasus/dist/pegasus.min.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
+    <link rel="stylesheet" href="style.css">
+  </head>
+  <body class="edit">
+    <div id="app" class="container">
+
+      <div v-if="keyError" class="alert alert-danger" role="alert"><b>Error:</b> add u=<b>key</b> to URL</div>
+
+      <div class="row header">
+        <div class="col-xs-12">
+          <h2>Edit {{key}} feed</h2>
+        </div>
+      </div>
+
+      <!-- add new -->
+      <div class="row add">
+        <div class="col-md-6 content">
+          <h3 class="card-title">Add RSS feed</h3>
+          <form class="needs-validation" id="addForm" novalidate>
+            <div class="form-group">
+              <label for="url"><i class="fa fa-rss"></i> RSS feed URL</label>
+              <input type="text" id="url" v-model="sourceUrl" class="form-control" v-on:blur="validateUrl" v-bind:class="urlError ? 'is-invalid' : ''" required>
+              <div class="invalid-feedback">{{urlError}}</div>
+            </div>
+            <div class="form-group">
+              <label for="name">Name</label>
+              <input type="text" id="name" v-model="sourceName" class="form-control" required>
+            </div>
+            <button class="btn btn-primary" type="button" v-on:click="add" v-bind:disabled="!validSource">Add</button>
+          </form>
+        </div>
+
+        <div class="col-md-6 content">
+          <!-- if first loaded -->
+          <div v-if="item" class="story">
+            <div class="alert alert-success" role="alert">Loaded successfully!</div>
+            <h4 class="title">
+              <a :href="item.url" target="story"> {{item.title}}</a>
+            </h4>
+            <div class="text">
+              <a :href="item.url" target="story">{{item.shortSummary}}</a>
+            </div>
+            <h5>
+              <a class="source">{{item.source}}</a> • {{item.dateStr}}
+            </h5>
+          </div>
+
+          <div v-if="loading" class="loading">
+            <i class="fa fa-spinner fa-spin"></i> Checking URL...
+          </div>
+
+          <div v-if="addMessage" class="alert alert-info fade show" role="alert" id="addMessage">
+            <span v-html="addMessage"></span>
+          </div>
+        </div>
+      </div>
+
+      <h3>Feed contents <span class="badge badge-secondary">{{sources.length}}</span></h3>
+
+      <!-- list current -->
+      <ul class="list-group">
+        <li v-for="source in sources" class="list-group-item source">
+          <div class="d-flex flex-row align-items-center">
+            <div class="state">
+              <input type="checkbox" :checked="source.show" class="uninitialized-toggle" data-toggle="toggle" data-size="small" data-onstyle="success" onchange="vm.toggle(this)" :data="source.url">
+            </div>
+            <div class="details">
+              <h4 class="title" v-bind:class="source.show ? 'text-dark' : 'text-muted'">
+                {{source.name}}
+              </h4>
+              <div class="text">
+                <a :href="source.url" target="source" v-bind:class="source.show ? 'text-dark' : 'text-muted'">{{source.url}}</a>
+              </div>
+            </div>
+          </div>
+        </li>
+      </ul>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.19.1/moment.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.5.13/vue.js"></script>
+    <script src="https://code.jquery.com/jquery-3.3.0.min.js" integrity="sha256-RTQy8VOmNlT6b2PIRur37p6JEBZUE7o8wPgMvu18MC4="
+  crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.4/lodash.min.js"></script>
+    <link href="https://gitcdn.github.io/bootstrap-toggle/2.2.2/css/bootstrap-toggle.min.css" rel="stylesheet">
+    <script src="https://gitcdn.github.io/bootstrap-toggle/2.2.2/js/bootstrap-toggle.min.js"></script>
+
+    <script src="rss-parser.min.js"></script>
+    <script src="config.js"></script>
+    <script src="rss-edit.js"></script>
+  </body>
+</html>
