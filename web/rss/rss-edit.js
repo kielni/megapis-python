@@ -1,6 +1,6 @@
 const pageUrl = new URL(location.href);
 const key = pageUrl.searchParams.get('u');
-const sources = pegasus(`${config.url}/sources-${key}.json`);
+const sources = pegasus(`${config.baseURL}/sources-${key}.json`);
 const CORS_PROXY = 'https://cors-anywhere.herokuapp.com/';
 
 var vm = new Vue({ // eslint-disable-line no-unused-vars, no-var
@@ -16,6 +16,8 @@ var vm = new Vue({ // eslint-disable-line no-unused-vars, no-var
     sourceName: null,
     loading: false,
     addMessage: null,
+    refreshing: false,
+    key,
   },
 
   mounted: function mounted() {
@@ -39,6 +41,10 @@ var vm = new Vue({ // eslint-disable-line no-unused-vars, no-var
   computed: {
     validSource: function() {
       return this.sourceUrlValidated && !this.urlError && this.sourceName && this.sourceName.length;
+    },
+
+    feedUrl: function() {
+      return `index.html?u=${key}`;
     },
   },
 
@@ -117,13 +123,36 @@ var vm = new Vue({ // eslint-disable-line no-unused-vars, no-var
       this.sourceName = '';
     },
 
+    _lambda: function(data) {
+      return $.post(config.apiURL, data)
+        .done((resp) => { console.log('refreshed: ', resp); })
+        .fail((resp) => { console.error('error ', resp); });
+    },
+
     toggle: function(checkbox) {
       const url = $(checkbox).attr('data');
       const source = this.sources.find(src => src.url === url);
 
       source.show = !source.show;
       console.log('toggle ', url, ' show=', source.show);
-      // $.post(config.webhookURL, source);
+
+      this._lambda(JSON.stringify({
+        key,
+        source: source.url,
+        name: source.name,
+        hide: source.show ? 'false' : 'true',
+        action: 'update',
+      }));
+    },
+
+    refresh: function() {
+      const data = JSON.stringify({
+        key,
+        action: 'refresh',
+      });
+
+      this.refreshing = true;
+      this._lambda(data).always(() => { this.refreshing = false; });
     },
   },
 });

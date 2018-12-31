@@ -14,9 +14,10 @@ module.exports = {
     server: true,
     'moment': false,
     'pegasus': false,
-    'Vue': false
+    'Vue': false,
     '$': false,
     'config': false,
+    '_': false,
   },
   rules: {
     'array-callback-return': 0,

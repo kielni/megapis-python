@@ -12,6 +12,7 @@ from megapis.tasks.hbs_to_html import HbsToHtmlTask
 #from megapis.tasks.local_file import LocalFileTask
 from megapis.tasks.prime_books import PrimeBooksTask
 from megapis.tasks.parse_rss import RssTask
+from megapis.tasks.rss_sources import RssSourcesTask
 from megapis.tasks.s3_upload import S3UploadTask
 from megapis.tasks.steam_library import SteamLibraryTask
 from megapis.tasks.steam_new_releases import SteamNewReleasesTask
@@ -21,6 +22,7 @@ SEQUENCES = {
     'prime-books': [PrimeBooksTask, S3UploadTask],
     'rss': [RssTask, S3UploadTask],
     'rss-evan': [RssTask, S3UploadTask],
+    'rss-sources': [RssSourcesTask, S3UploadTask],
     'steam-library': [SteamLibraryTask, S3UploadTask],
     'steam-new-releases': [SteamNewReleasesTask, HbsToHtmlTask, S3UploadTask],
 }
@@ -33,7 +35,9 @@ def run(tasks, config):
         task_obj = task(config)
         print('\nrun %s\n' % task_obj)
         data = task_obj.run(data)
+        print('return %s' % data)
     print('\ndone %s tasks in %ss' % (len(tasks), time.time() - ts))
+    return data
 
 '''
     command line

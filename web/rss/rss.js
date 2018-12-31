@@ -1,6 +1,6 @@
 const url = new URL(location.href);
-const key = url.searchParams.get('u');
-const items = pegasus(config[key].storiesURL);
+const key = url.searchParams.get('u') || 'default';
+const items = pegasus(`${config.baseURL}/rss-${key}.json`);
 
 const app = new Vue({ // eslint-disable-line no-unused-vars
   el: '#app',

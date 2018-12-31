@@ -35,8 +35,9 @@ class S3UploadTask(TaskBase):
         if data:
             output = TRANSFORMS[self.config['transform']](data)
             content_type = self.config['contentType']
-            print('put %s/%s as %s' % (
-                self.config['bucket'], self.config['key'], content_type))
+            print('put %s/%s as %s %s' % (
+                self.config['bucket'], self.config['key'], content_type, self.config['transform']))
+            print('body=%s' % output)
             print(s3.put_object(
                 ACL=self.config['acl'],
                 Body=output.encode('utf-8'),

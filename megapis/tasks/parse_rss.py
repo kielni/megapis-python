@@ -33,6 +33,7 @@ class RssTask(TaskBase):
         items = []
         empty = []
         # load urls from json
+        print('sources=%s' % self.config['sources'])
         sources = requests.get(self.config['sources']).json()
         for url in sources.keys():
             data = feedparser.parse(url) # pylint: disable=no-member
@@ -97,7 +98,7 @@ class RssTask(TaskBase):
         dt = self._published_date(entry)
         if output:
             prefix = '- ' if dt < self.min_dt else '✓ '
-            print('\t%s%s\t%s' % (prefix, dt.strftime('%-m/%-d'), entry.title[:80]))
+            #print('\t%s%s\t%s' % (prefix, dt.strftime('%-m/%-d'), entry.title[:80]))
         if dt < self.min_dt:
             return None
         summary = None
