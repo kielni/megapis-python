@@ -1,3 +1,4 @@
+import random
 from datetime import datetime, timedelta
 import re
 import time
@@ -38,19 +39,30 @@ class RssTask(TaskBase):
         empty = []
         limit = self.config["max_sources"]
         # load urls from json
-        print(f"sources={self.config['sources']}")
         sources = requests.get(self.config["sources"]).json()
-        for idx, url in enumerate(sources.keys()):
+        print(f"{len(sources)} sources")
+        urls = list(sources.keys())
+        random.shuffle(list(sources.keys()))
+        ts = datetime.now()
+        agent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36"
+        for idx, url in enumerate(urls):
             if limit and idx >= int(limit):
                 break
-            data = feedparser.parse(url)  # pylint: disable=no-member
+            print(f"\n{idx+1}/{len(sources)}\t{url}")
+            print(f"previous elapsed = {(datetime.now() - ts).total_seconds()}s")
+            ts = datetime.now()
+            try:
+                response = requests.get(url, timeout=10, headers={"User-Agent": agent})
+            except requests.exceptions.RequestException as err:
+                print(f"error getting {url}: {err}")
+                continue
+            data = feedparser.parse(response.content)  # pylint: disable=no-member
             saved = 0
-            print(f"\n{url}\t{data.get('feed', {}).get('title')}")
-            print(f"\t{len(data['entries'])} entries")
+            print(f"{data.get('feed', {}).get('title')}\t{len(data['entries'])} entries")
             if not data["entries"]:
                 empty.append(url)
             output = True
-            for entry in data["entries"]:
+            for entry in data["entries"][:self.config["max_items"] + 1]:
                 entry = self._parse_entry(entry, output=output)
                 if not entry:
                     output = False
@@ -67,9 +79,12 @@ class RssTask(TaskBase):
                 if saved == sources[url].get("stories", self.config["max_items"]):
                     break
         print(f"\n{len(items)} total items")
+        titles = {item["title"] for item in items}
+        print(f"\n{len(titles)} unique titles")
         keep: List[Dict] = []
-        titles: Set[str] = set()
+        titles = set()
         for item in items:
+            print(f"title={item['title']}\ntitles={titles}")
             if item["title"] in titles:
                 print(f"dropping duplicate {item['title']}")
                 continue
@@ -77,7 +92,7 @@ class RssTask(TaskBase):
             titles.add(item["title"])
         items = sorted(keep, key=lambda x: x["date"], reverse=True)
         for item in items:
-            print(f"{item['date']}\t{item['title']}")
+            print(f"keep:\t{item['date']}\t{item['title']}")
         print(f"{len(items)} de-duped items")
         for url in empty:
             print(f"\nWARNING: no entries for {url}")
@@ -118,7 +133,7 @@ class RssTask(TaskBase):
         return dt
 
     def _parse_entry(self, entry, output):
-        print(entry.title)
+        print(f"\t{entry.title}")
         dt = self._published_date(entry)
         print(f"\tpublished={dt}")
         """
@@ -127,7 +142,6 @@ class RssTask(TaskBase):
             # print('\t%s%s\t%s' % (prefix, dt.strftime('%-m/%-d'), entry.title[:80]))
         """
         if dt < self.min_dt:
-            print("\ttoo old")
             return None
         summary = None
         # get image from html
